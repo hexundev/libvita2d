@@ -12,6 +12,7 @@ This fork includes a few additions I needed.
 - Multiply blend mode added along with an enum for blend modes
 - vita2d_vertex_bufferfor rendering data that does not need to be changed often
 - Set a custom matrix for rendering with vita2d_set_matrix
+- A couple of misc functions for convenience
 
 
 ## Samples
