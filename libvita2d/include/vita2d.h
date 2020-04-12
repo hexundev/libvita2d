@@ -13,56 +13,86 @@ extern "C" {
 
 #define RGBA8(r,g,b,a) ((((a)&0xFF)<<24) | (((b)&0xFF)<<16) | (((g)&0xFF)<<8) | (((r)&0xFF)<<0))
 
+typedef void (*vita2d_callback)(void);
+
+typedef enum vita2d_vertex_type
+{
+    VITA2D_VERTEX_TYPE_NONE,
+    VITA2D_VERTEX_TYPE_CLEAR,
+    VITA2D_VERTEX_TYPE_COLOR,
+    VITA2D_VERTEX_TYPE_TEXTURE
+} vita2d_vertex_type;
+
+typedef enum vita2d_blend_mode
+{
+    VITA2D_BLEND_DEFAULT,
+    VITA2D_BLEND_ADD,
+    VITA2D_BLEND_MULTIPLY,
+} vita2d_blend_mode;
+
+
 typedef struct vita2d_clear_vertex {
-	float x;
-	float y;
+    float x;
+    float y;
 } vita2d_clear_vertex;
 
 typedef struct vita2d_color_vertex {
-	float x;
-	float y;
-	float z;
-	unsigned int color;
+    float x;
+    float y;
+    float z;
+    unsigned int color;
 } vita2d_color_vertex;
 
 typedef struct vita2d_texture_vertex {
-	float x;
-	float y;
-	float z;
-	float u;
-	float v;
+    float x;
+    float y;
+    float z;
+    float u;
+    float v;
 } vita2d_texture_vertex;
 
 typedef struct vita2d_texture {
-	SceGxmTexture gxm_tex;
-	SceUID data_UID;
-	SceUID palette_UID;
-	SceGxmRenderTarget *gxm_rtgt;
-	SceGxmColorSurface gxm_sfc;
-	SceGxmDepthStencilSurface gxm_sfd;
-	SceUID depth_UID;
+    SceGxmTexture gxm_tex;
+    SceUID data_UID;
+    SceUID palette_UID;
+    SceGxmRenderTarget *gxm_rtgt;
+    SceGxmColorSurface gxm_sfc;
+    SceGxmDepthStencilSurface gxm_sfd;
+    SceUID depth_UID;
 } vita2d_texture;
 
+typedef struct vita2d_vertex_buffer {
+    SceUID buffer_UID;
+    vita2d_vertex_type vertex_type;
+    unsigned int vertex_count;
+    unsigned int size;
+    void* vertices;
+} vita2d_vertex_buffer;
+
 typedef struct vita2d_system_pgf_config {
-	SceFontLanguageCode code;
-	int (*in_font_group)(unsigned int c);
+    SceFontLanguageCode code;
+    int (*in_font_group)(unsigned int c);
 } vita2d_system_pgf_config;
 
 typedef struct vita2d_system_pvf_config {
-	ScePvfLanguageCode code;
-	int (*in_font_group)(unsigned int c);
+    ScePvfLanguageCode code;
+    int (*in_font_group)(unsigned int c);
 } vita2d_system_pvf_config;
 
 typedef struct vita2d_font vita2d_font;
 typedef struct vita2d_pgf vita2d_pgf;
 typedef struct vita2d_pvf vita2d_pvf;
+typedef unsigned int vita2d_color;
+
 
 int vita2d_init();
 int vita2d_init_advanced(unsigned int temp_pool_size);
 int vita2d_init_advanced_with_msaa(unsigned int temp_pool_size, SceGxmMultisampleMode msaa);
 void vita2d_wait_rendering_done();
 int vita2d_fini();
+int vita2d_fini_callback(vita2d_callback cb);
 
+void vita2d_clear(vita2d_color color);
 void vita2d_clear_screen();
 void vita2d_swap_buffers();
 
@@ -80,6 +110,12 @@ SceGxmContext *vita2d_get_context();
 SceGxmShaderPatcher *vita2d_get_shader_patcher();
 const uint16_t *vita2d_get_linear_indices();
 
+
+void vita2d_set_ortho_matrix(int width, int height);
+void vita2d_set_ortho_view_matrix(int x, int y, int width, int height);
+void vita2d_set_matrix(const float *mvp);
+void vita2d_reset_matrix();
+
 void vita2d_set_region_clip(SceGxmRegionClipMode mode, unsigned int x_min, unsigned int y_min, unsigned int x_max, unsigned int y_max);
 void vita2d_enable_clipping();
 void vita2d_disable_clipping();
@@ -87,6 +123,9 @@ int vita2d_get_clipping_enabled();
 void vita2d_set_clip_rectangle(int x_min, int y_min, int x_max, int y_max);
 void vita2d_get_clip_rectangle(int *x_min, int *y_min, int *x_max, int *y_max);
 void vita2d_set_blend_mode_add(int enable);
+void vita2d_set_blend_mode(vita2d_blend_mode mode);
+vita2d_vertex_buffer vita2d_vertex_buffer_create(unsigned int vertex_count, vita2d_vertex_type vertex_type);
+void vita2d_vertex_buffer_free(vita2d_vertex_buffer* buffer);
 
 void *vita2d_pool_malloc(unsigned int size);
 void *vita2d_pool_memalign(unsigned int size, unsigned int alignment);
@@ -137,6 +176,10 @@ void vita2d_draw_texture_tint_scale_rotate_hotspot(const vita2d_texture *texture
 void vita2d_draw_texture_tint_scale_rotate(const vita2d_texture *texture, float x, float y, float x_scale, float y_scale, float rad, unsigned int color);
 void vita2d_draw_texture_part_tint_scale_rotate(const vita2d_texture *texture, float x, float y, float tex_x, float tex_y, float tex_w, float tex_h, float x_scale, float y_scale, float rad, unsigned int color);
 void vita2d_draw_array_textured(const vita2d_texture *texture, SceGxmPrimitiveType mode, const vita2d_texture_vertex *vertices, size_t count, unsigned int color);
+
+/* Triangle primitive */
+void vita2d_draw_color_vertex_buffer(const vita2d_vertex_buffer *buffer);
+void vita2d_draw_vertex_buffer(const vita2d_texture *texture, const vita2d_vertex_buffer *buffer, vita2d_color color);
 
 vita2d_texture *vita2d_load_PNG_file(const char *filename);
 vita2d_texture *vita2d_load_PNG_buffer(const void *buffer);
