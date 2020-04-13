@@ -891,7 +891,7 @@ void vita2d_set_ortho_matrix(int width, int height)
 void vita2d_set_ortho_view_matrix(int x, int y, int width, int height)
 {
     matrix_init_orthographic(_vita2d_proj_matrix, 0.0f, (float)width, (float)height, 0.0f, 0.0f, 1.0f);
-    matrix_set_xyz_translation(_vita2d_view_matrix, (float)x, (float)y, 0.5f);
+    matrix_set_xyz_translation(_vita2d_view_matrix, (float)x, (float)y, 0.0f);
     matrix_mult4x4(_vita2d_view_matrix, _vita2d_proj_matrix, _vita2d_ortho_matrix);
 }
 void vita2d_set_matrix(const float *mvp)
