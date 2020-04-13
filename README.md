@@ -14,6 +14,5 @@ This fork includes a few additions I needed.
 - Set a custom matrix for rendering with vita2d_set_matrix
 - A couple of misc functions for convenience
 
-
-## Samples
-To be added.
+samples2 folder has some things I experimented with.
+![](https://i.imgur.com/Hsw5yZt.png)
